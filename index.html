@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品数据查询</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-hover-color: #2980b9;
+            --success-color: #2ecc71;
+            --background-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            --card-hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: var(--background-gradient);
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 2rem;
+        }
+        
+        .date-display {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin: 8px 0;
+        }
+        
+        .instructions {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .card.copied {
+            border: 2px solid var(--success-color);
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.2);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-hover-shadow);
+        }
+        
+        .card-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header h2 {
+            font-size: 1.2rem;
+        }
+        
+        .card-content {
+            padding: 18px;
+        }
+        
+        .query-text {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--primary-color);
+            font-size: 0.95rem;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        .card.copied .copy-btn {
+            background: var(--success-color);
+        }
+        
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        
+        .requirements {
+            background: #fff8e6;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border-left: 3px solid #f39c12;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            h1 { font-size: 1.6rem; }
+        }
+        
+        .copy-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 12px 22px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .copy-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>商品数据查询</h1>
+            <div class="date-display" id="current-date">加载中...</div>
+            <p>专业商品数据与趋势分析查询工具</p>
+        </header>
+        
+        <div class="instructions">
+            <p><i class="fas fa-info-circle"></i> 点击任意卡片即可复制查询内容，所有日期将自动更新为当前中国时区。</p>
+        </div>
+        
+        <div class="card-grid">
+            <!-- 卡片模板，通过JS动态添加 -->
+        </div>
+        
+        <footer>
+            <p>© 2025 商品数据查询系统 | 自动更新中国时区 | 数据仅供参考</p>
+        </footer>
+    </div>
+    
+    <div class="copy-notification" id="copy-notification">
+        <i class="fas fa-check-circle"></i> 内容已复制到剪贴板！
+    </div>
+
+    <script>
+        const cardData = [
+            { id: 1, title: '国际原油', icon: 'fa-oil-well', query: '最近国际原油和库存变化的走势。' },
+            { id: 2, title: '豆粕', icon: 'fa-seedling', query: '最近豆粕价格和库存变化的走势。' },
+            { id: 3, title: '动力煤', icon: 'fa-industry', query: '最近动力煤价格和库存变化的走势。' },
+            { id: 4, title: '电解铝', icon: 'fa-bolt', query: '最近电解铝利润和库存变化的走势。' },
+            { id: 5, title: '火力发电', icon: 'fa-fire', query: '最近火力发电和对应电价变化的走势。' },
+            { id: 6, title: '长江电力', icon: 'fa-water', query: '最近长江电力发电情况和变化趋势。' }
+        ];
+
+        let chinaDateString = '';
+
+        // 更新日期函数
+        function updateDate() {
+            const now = new Date();
+            const options = { 
+                timeZone: 'Asia/Shanghai', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            };
+            chinaDateString = now.toLocaleDateString('zh-CN', options);
+            document.getElementById('current-date').textContent = chinaDateString;
+        }
+        
+        // 复制文本函数
+        function copyText(queryElementId, requirementsElementId, cardElement, event) {
+            if (event) event.stopPropagation();
+
+            const queryElement = document.getElementById(queryElementId);
+            const requirementsElement = document.getElementById(requirementsElementId);
+            
+            const textToCopy = queryElement.innerText + "\n\n" + requirementsElement.innerText;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showCopyNotification();
+                updateCardUI(cardElement);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                // 降级方案
+                const textArea = document.createElement('textarea');
+                textArea.value = textToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showCopyNotification();
+                    updateCardUI(cardElement);
+                } catch (e) {
+                    console.error('降级复制方案也失败了:', e);
+                }
+                document.body.removeChild(textArea);
+            });
+        }
+
+        function updateCardUI(cardElement) {
+            // 移除其他卡片的'copied'状态
+            document.querySelectorAll('.card.copied').forEach(c => c.classList.remove('copied'));
+            
+            cardElement.classList.add('copied');
+            const button = cardElement.querySelector('.copy-btn');
+            const originalButtonIcon = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i>';
+
+            setTimeout(() => {
+                cardElement.classList.remove('copied');
+                button.innerHTML = originalButtonIcon;
+            }, 2000);
+        }
+        
+        // 显示复制成功通知
+        function showCopyNotification() {
+            const notification = document.getElementById('copy-notification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 生成卡片
+        function generateCards() {
+            const grid = document.querySelector('.card-grid');
+            grid.innerHTML = cardData.map(item => `
+                <div class="card" onclick="copyText('query-${item.id}', 'requirements-${item.id}', this)">
+                    <button class="copy-btn" onclick="copyText('query-${item.id}', 'requirements-${item.id}', this.parentElement, event)">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <div class="card-header">
+                        <h2><i class="fas ${item.icon}"></i> ${item.title}</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="query-text" id="query-${item.id}">
+                            今天是${chinaDateString}，${item.query}
+                        </div>
+                        <div class="requirements" id="requirements-${item.id}">
+                            <strong>其他要求：</strong> think hard，需要你通过递归层次结构自动将复杂问题进行拆解，变成一个个可并行处理的子任务。
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDate();
+            generateCards();
+            setInterval(updateDate, 60000); // 每分钟更新一次日期
+        });
+    </script>
+</body>
+</html>
