@@ -224,7 +224,13 @@
             { id: 3, title: '动力煤', icon: 'fa-industry', query: '最近动力煤价格和库存变化的走势。' },
             { id: 4, title: '电解铝', icon: 'fa-bolt', query: '最近电解铝利润和库存变化的走势。' },
             { id: 5, title: '火力发电', icon: 'fa-fire', query: '最近火力发电和对应电价变化的走势。' },
-            { id: 6, title: '长江电力', icon: 'fa-water', query: '最近长江电力发电情况和变化趋势。' }
+            { id: 6, title: '长江电力', icon: 'fa-water', query: '最近长江电力发电情况和变化趋势。' },
+            { id: 7, title: '神火股份', icon: 'fa-chart-line', query: '请解读神火股份的K线和基本面走势情况，并对最近一个月的趋势进行预测。' },
+            { id: 8, title: '豆粕ETF', icon: 'fa-chart-pie', query: '请解读豆粕ETF的K线和基本面走势情况，并对最近一个月的趋势进行预测。' },
+            { id: 9, title: '中国海油', icon: 'fa-ship', query: '请解读中国海油的K线和基本面走势情况，并对最近一个月的趋势进行预测。' },
+            { id: 10, title: '中远海运', icon: 'fa-anchor', query: '请解读中远海运的K线和基本面走势情况，并对最近一个月的趋势进行预测。' },
+            { id: 11, title: '豪威股份', icon: 'fa-microchip', query: '请解读豪威股份的K线和基本面走势情况，并对最近一个月的趋势进行预测。' },
+            { id: 12, title: '陕西煤业', icon: 'fa-train-subway', query: '请解读陕西煤业的K线和基本面走势情况，并对最近一个月的趋势进行预测。' }
         ];
 
         let chinaDateString = '';
@@ -275,11 +281,17 @@
 
         function updateCardUI(cardElement) {
             // 移除其他卡片的'copied'状态
-            document.querySelectorAll('.card.copied').forEach(c => c.classList.remove('copied'));
+            document.querySelectorAll('.card.copied').forEach(c => {
+                if(c !== cardElement) {
+                    c.classList.remove('copied');
+                    const btn = c.querySelector('.copy-btn');
+                    btn.innerHTML = '<i class="fas fa-copy"></i>';
+                }
+            });
             
             cardElement.classList.add('copied');
             const button = cardElement.querySelector('.copy-btn');
-            const originalButtonIcon = button.innerHTML;
+            const originalButtonIcon = '<i class="fas fa-copy"></i>';
             button.innerHTML = '<i class="fas fa-check"></i>';
 
             setTimeout(() => {
@@ -330,3 +342,4 @@
     </script>
 </body>
 </html>
+
